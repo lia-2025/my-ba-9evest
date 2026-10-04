@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>私の選ぶイベスト9選</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #a3d8ff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px;
+}
+
+h1 {
+  text-align: center;
+  color: #fff;
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+}
+
+.wrap {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.panel {
+  width: 480px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* 右側のランキングパネルの高さを中身ピッタリにする */
+#rankingPanel {
+  height: fit-content;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: #0077cc;
+  text-align: center;
+}
+
+.searchContainer {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+#searchInput {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cce7ff;
+  font-size: 1rem;
+}
+
+#clearSearchBtn {
+  border: none;
+  border-radius: 8px;
+  background: #ff6fa5;
+  color: #fff;
+  font-weight: 600;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.list {
+  padding: 6px;
+}
+
+#charList {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+/* 共通カード */
+.item,
+.selectedItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #cce7ff;
+}
+
+.item {
+  background: #fefefe;
+}
+
+.selectedItem {
+  background: #f0f9ff;
+}
+
+/* 一覧：検索時のみ画像（小） */
+.item img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+#selectedList{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:5px;
+}
+.selectedItem{position:relative;border:none;padding:0;margin:0;background:none;}
+.selectedItem img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;display:block;}
+.removeBtn{position:absolute;top:4px;right:4px;border-radius:50%;width:24px;height:24px;}
+.item strong,
+.selectedItem strong {
+  word-break: break-word;
+}
+
+button.addBtn,
+button.removeBtn {
+  background: #0077cc;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.rankLabel {
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #0077cc;
+  color: #fff;
+  min-width: 44px;
+  text-align: center;
+}
+
+.controls {
+  margin-top: 16px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+#screenshotBtn {
+  background: #ff6fa5;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+#shareXBtn {
+  background: #000000;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .wrap {
+    flex-direction: column;
+    align-items: center;
+  }
+  .panel {
+    width: 90%;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="mainContainer">
+  <h1>私の選ぶイベスト9選</h1>
+
+  <div class="wrap">
+    <div class="panel">
+      <h2>イベスト一覧</h2>
+
+      <div class="searchContainer">
+        <input type="text" id="searchInput" placeholder="イベスト名で検索…">
+        <button id="clearSearchBtn">×</button>
+      </div>
+
+      <div class="list" id="charList"></div>
+    </div>
+
+    <div class="panel" id="rankingPanel">
+      <h2>私の選ぶイベスト9選</h2>
+      <div class="list" id="selectedList"></div>
+      <div class="controls">
+        <button id="screenshotBtn">スクリーンショット</button>
+        <button id="shareXBtn">Xでシェア</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+/* ===== イベストデータ ===== */
+const characterList = [
+  {id: "char_1", name: "桜花爛漫お祭り騒ぎ！～空に徒花 地に忍び～"},
+  {id: "char_2", name: "革命のイワン・クパーラ 髭とプリンとレッドウィンター"},
+  {id: "char_3", name: "夏空のウィッシュリスト"},
+  {id: "char_4", name: "～風紀委員会行政官緊急特務命令～ヒナ委員長のなつやすみっ！"},
+  {id: "char_5", name: "ネバーランドでつかまえて"},
+  {id: "char_6", name: "船上のバニーチェイサー"},
+  {id: "char_7", name: "初音ミクのスペシャルライブ in キヴォトス～リハーサル篇～"},
+  {id: "char_8", name: "227号温泉郷の運営記録！～白い吐息は寄り添って～"},
+  {id: "char_9", name: "新春狂想曲 第68番"},
+  {id: "char_10", name: "シャーレのハッピー♡バレンタインパトロール 狐坂ワカモの沈黙と祝宴"},
+  {id: "char_11", name: "どたばたシスターと古書館の魔術師"},
+  {id: "char_12", name: "不忍ノ心"},
+  {id: "char_13", name: "アビドスリゾート復旧対策委員会"},
+  {id: "char_14", name: "出張！百夜堂海の家FC計画"},
+  {id: "char_15", name: "放課後スイーツ物語 甘い秘密と銃撃戦"},
+  {id: "char_16", name: "ON YOUR MARK @MILLENNIUM～キヴォトス晄輪大祭～"},
+  {id: "char_17", name: "Get Set,GO！ ～キヴォトス晄輪大祭～"},
+  {id: "char_18", name: "聖堂のメリークリスマス ～救護騎士団の贈り物～"},
+  {id: "char_19", name: "喰積の 前にいささか ～一番勝負～"},
+  {id: "char_20", name: "白亜の予告状 ～虚飾の館と美学の在り処～"},
+  {id: "char_21", name: "龍武同舟 ～思い描くは、ひとつの未来～"},
+  {id: "char_22", name: "夏の特殊作戦！RABBIT小隊と消えたエビの謎"},
+  {id: "char_23", name: "隠されし遺産を求めて ～トリニティの課外活動～"},
+  {id: "char_24", name: "学漫同人物語 ～2人が求める最終回～"},
+  {id: "char_25", name: "Trip-Trap-Train"},
+  {id: "char_26", name: "とある科学の青春記録"},
+  {id: "char_27", name: "電脳新春行進曲"},
+  {id: "char_28", name: "陽ひらく彼女たちの小夜曲"},
+  {id: "char_29", name: "0068 オペラより愛をこめて！"},
+  {id: "char_30", name: "にぎにぎとゆきゆきて"},
+  {id: "char_31", name: "-ive aLIVE!"},
+  {id: "char_32", name: "Say-Bing!"},
+  {id: "char_33", name: "Sheside outside"},
+  {id: "char_34", name: "月華夢騒"},
+  {id: "char_35", name: "五塵来降"},
+  {id: "char_36", name: "Serenade Promenade"},
+  {id: "char_37", name: "秘密のミッドナイトパーティー～オニの手は鐘と共に～"},
+  {id: "char_38", name: "Code: BOX ミレニアムに迫る影～一つの問いと二つの答え～"},
+  {id: "char_39", name: "パンデミック・ハザード～奇跡の一枚～"},
+  {id: "char_40", name: "プレイボール！ ～目指せ！満塁ホームラン～"},
+  {id: "char_41", name: "ハイランダー鉄道爆走事件〜そして列車はなくなった〜"},
+  {id: "char_42", name: "百ヨリ出ズル一輪ノ 〜いざ尋事前に、水上勝負〜"},
+  {id: "char_43", name: "夏空のやくそく"},
+  {id: "char_44", name: "我らオカルト研究会！ ～学院の不思議と古の呪文～"},
+  {id: "char_45", name: "誰が為の芸術 〜偽飾の絵画と美学の行方〜"},
+  {id: "char_46", name: "魔法少女ヘヴィキャリバー～エラの野望と正義の資格～"},
+  {id: "char_47", name: "冬空の文芸復興 ～健全なる文化の交流について～"},
+  {id: "char_48", name: "不忍ノ道 ～ファッションショー警護任務！の巻～"},
+  {id: "char_49", name: "キヴォトス・未確認ミステリー～邪を払うツチノコ大調査～"},
+  {id: "char_50", name: "嵐過天晴"},
+  {id: "char_51", name: "出航！万魔船 マコト議長の華麗なる避暑"},
+  {id: "char_52", name: "DIVE into OCEAN！"},
+  {id: "char_53", name: "It’s our Engine! ～183号を脱出せよ！～"}
+];
+
+const MAX_SELECT = 9;
+let selected = [];
+
+/* ===== DOM ===== */
+const charListEl = document.getElementById("charList");
+const selectedListEl = document.getElementById("selectedList");
+const searchInput = document.getElementById("searchInput");
+const clearBtn = document.getElementById("clearSearchBtn");
+const screenshotBtn = document.getElementById("screenshotBtn");
+const shareXBtn = document.getElementById("shareXBtn");
+const rankingPanel = document.getElementById("rankingPanel");
+
+/* ===== 画像パス ===== */
+function getImagePath(char) {
+  const index = characterList.findIndex(c => c.id === char.id);
+  return `image/${index + 1}.png`;
+}
+
+/* ===== 一覧描画 ===== */
+function renderAll(list = characterList) {
+  const showImage = searchInput.value.trim() !== "";
+  charListEl.innerHTML = "";
+
+  list.forEach(char => {
+    const el = document.createElement("div");
+    el.className = "item";
+
+    el.innerHTML = `
+      ${showImage ? `<img src="${getImagePath(char)}" alt="">` : ""}
+      <div style="flex:1"><strong>${escapeHtml(char.name)}</strong></div>
+      <button class="addBtn">追加</button>
+    `;
+
+    el.querySelector(".addBtn").onclick = () => addChar(char);
+    charListEl.appendChild(el);
+  });
+}
+
+/* ===== ランキング描画 ===== */
+function renderSelected() {
+  selectedListEl.innerHTML = "";
+
+  selected.forEach((char, idx) => {
+    const item = document.createElement("div");
+    item.className = "selectedItem";
+    item.draggable = true;
+    item.dataset.id = char.id;
+
+    item.innerHTML = `
+<img src="${getImagePath(char)}" alt="">
+<button class="removeBtn">×</button>
+`;
+
+    item.querySelector(".removeBtn").onclick = () => removeChar(char.id);
+    item.addEventListener("dragstart", onDragStart);
+    item.addEventListener("dragover", e => e.preventDefault());
+    item.addEventListener("drop", onDrop);
+    item.addEventListener("dragend", onDragEnd);
+
+    selectedListEl.appendChild(item);
+  });
+}
+
+/* ===== 操作 ===== */
+function addChar(char) {
+  if (selected.find(c => c.id === char.id)) {
+    alert("すでに選択されています");
+    return;
+  }
+  if (selected.length >= MAX_SELECT) {
+    alert("選択できるのは9個までです");
+    return;
+  }
+  selected.push(char);
+  renderSelected();
+}
+
+function removeChar(id) {
+  selected = selected.filter(c => c.id !== id);
+  renderSelected();
+}
+
+/* ===== 並び替え ===== */
+let dragSrcId = null;
+
+function onDragStart() {
+  dragSrcId = this.dataset.id;
+  this.style.opacity = "0.4";
+}
+
+function onDrop() {
+  const targetId = this.dataset.id;
+  if (dragSrcId === targetId) return;
+
+  const from = selected.findIndex(c => c.id === dragSrcId);
+  const to = selected.findIndex(c => c.id === targetId);
+  const [moved] = selected.splice(from, 1);
+  selected.splice(to, 0, moved);
+  renderSelected();
+}
+
+function onDragEnd() {
+  this.style.opacity = "";
+  dragSrcId = null;
+}
+
+/* ===== 検索 ===== */
+searchInput.addEventListener("input", () => {
+  const key = searchInput.value.toLowerCase();
+  const filtered = characterList.filter(c =>
+    c.name.toLowerCase().includes(key)
+  );
+  renderAll(filtered);
+});
+
+clearBtn.onclick = () => {
+  searchInput.value = "";
+  renderAll();
+};
+
+/* ===== スクショ ===== */
+screenshotBtn.onclick = async () => {
+  if (selected.length === 0) {
+    alert("イベストを選択してください");
+    return;
+  }
+
+  document.querySelectorAll(".removeBtn").forEach(b => b.style.display = "none");
+  screenshotBtn.style.display = "none";
+  shareXBtn.style.display = "none";
+
+  try {
+    const rect = rankingPanel.getBoundingClientRect();
+
+    const canvas = await html2canvas(rankingPanel, {
+      backgroundColor: "#fff",
+      height: rect.height,
+      windowHeight: rect.height
+    });
+    const a = document.createElement("a");
+    a.download = "9evest.png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  } catch (e) {
+    alert("スクリーンショットの生成に失敗しました");
+    console.error(e);
+  } finally {
+    document.querySelectorAll(".removeBtn").forEach(b => b.style.display = "");
+    screenshotBtn.style.display = "";
+    shareXBtn.style.display = "";
+  }
+};
+
+/* ===== Xでシェア ===== */
+shareXBtn.onclick = () => {
+  const shareText = 
+`私の選ぶイベスト9選
+
+https://lia-2025.github.io/my-ba-9evest/
+
+#ブルアカ
+#私の選ぶイベスト9選`;
+
+  const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+  
+  window.open(shareUrl, "_blank");
+};
+
+/* ===== HTMLエスケープ ===== */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])
+  );
+}
+
+renderAll();
+</script>
+</body>
+</html>
